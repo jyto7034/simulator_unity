@@ -1,0 +1,26 @@
+{
+  "cards": [
+    {
+      "name": "나즈린",
+      "region": "Monster",
+      "attack": 5,
+      "health": 4,
+      "cost": 4,
+      "text": "공격: 최강인 적에게 우울 상태를 부여합니다.",
+      "tag": "Fear",
+      "player_type": 1,
+      "count": 4
+    },
+    {
+      "name": "첸",
+      "region": "Monster",
+      "attack": 5,
+      "health": 4,
+      "cost": 4,
+      "text": "공격: 최강인 적에게 우울 상태를 부여합니다.",
+      "tag": "Fear",
+      "player_type": 0,
+      "count": 6
+    }
+  ]
+}
