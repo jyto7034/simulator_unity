@@ -19,16 +19,14 @@ namespace Animation {
         // Field 에 카드가 play 되는 애니메이션 함수
         public void place_to_field_slot(Card.Card card, int slot_id) {
             var slot = Field.field_slots_tf[slot_id];
-            var before = new TransformData(
-                new Vector3(slot.position.x + 0.05f, slot.position.y + 2f, slot.position.z), 
-                card.transform.localScale * Constant.card_size_before_place_to_field,
-                Quaternion.Euler(0, slot.rotation.y, slot.rotation.z));
+            var before = slot.Clone();
+            before.AddPosition(x: 0.05f, y: 2f);
+            before.AddScale(x: 0.02f, y: 0.02f, z: 0.02f);
 
             var anim = new Animation();
             
             anim.MoveTo(card, before, 0.2f).AppendInterval(0.3f).Play();
-
-            anim.MoveTo(card, slot, 0.2f);
+            anim.MoveTo(card, slot, 0.2f).Play();
         }
 
         public static void place_to_hand(GameObject card) { }

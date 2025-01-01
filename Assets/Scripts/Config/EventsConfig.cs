@@ -12,8 +12,6 @@ namespace config {
         
         public UnityEvent<CardDrag> OnCardDrag;
         
-        public UnityEvent<CardDragEnd> OnCardDragEnd;
-        
         public UnityEvent<CardHover> OnCardHover;
         
         public UnityEvent<CardUnhover> OnCardUnhover;

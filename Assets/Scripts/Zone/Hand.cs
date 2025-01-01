@@ -4,6 +4,7 @@ using Card;
 using config;
 using UnityEngine;
 using Utils;
+using static Utils.Option;
 
 namespace Zone {
     struct CardTransform {
@@ -44,9 +45,6 @@ namespace Zone {
         [SerializeField]
         private EventsConfig events_config;
         
-        // 카드 hover 시 color 제대로 변하지 않는 오류는 고쳤고.
-        // Hover 상태에서 Unhover 상태로 돌아갈때 제대로 작동하지 않는 문제 있음.
-        // 그리고 카드 Play 했을 때, 카드 재정렬 안되는 문제 있음.
         // 그리고 카드 위치 변경 기능 제대로 고쳐야함.
         
         private void Awake() {
@@ -54,8 +52,6 @@ namespace Zone {
             pre_calculate_all_card_positions();
         }
         
-        // TODO: 다른 함수에서 주기적으로 호출하는 편임. 그냥 + 0.001f 하는게 아니라,
-        // 기준 상수를 하나 만들어서 해야할 듯.
         private void UpdateRenderQueue() {
             for (int i = 0; i < cards.Count; i++) {
                 MeshRenderer meshRenderer = cards[i].GetComponent<MeshRenderer>();
@@ -74,20 +70,26 @@ namespace Zone {
         }
     
         public void OnCardDrag(Card.Card card) {
-            int newIndex = find_insertion_index(card.transform.position);
-            if (newIndex != selected_card_idx) {
-                reorder_cards(selected_card_idx, newIndex);
-                selected_card_idx = newIndex;
+            if (find_insertion_index(card.transform.position).TryGet(out int newIndex)) {
+                if (newIndex != selected_card_idx) {
+                    Debug.Log(newIndex);
+                    Debug.Log(selected_card_idx);
+                    // reorder_cards(selected_card_idx, newIndex);
+                    // selected_card_idx = newIndex;
+                }
+            }
+            else {
+                print("Error: find_insertion_index()");
             }
         }
     
-        private int find_insertion_index(Vector3 position) {
+        private Option<int> find_insertion_index(Vector3 position) {
             for (var i = 0; i < cards.Count; i++) {
                 if (Vector3.Distance(position, cards[i].transform.position) < drop_threshold) {
-                    return i;
+                    return Some(i);
                 }
             }
-            return cards.Count - 1;
+            return None<int>();
         }
     
         private void reorder_cards(int oldIndex, int newIndex) {

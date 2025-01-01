@@ -17,6 +17,11 @@ namespace events {
                         continue;
                     case "Card":
                         break;
+                    case "Hand":
+                        if (_object.transform.TryGetComponent<Hand>(out var hand)) {
+                            hand.add_card(card);
+                        }
+                        break;
                     case "Field_Slot":
                         // field_slot 은 Field 스크립트가 부모 오브젝트에 있기 때문에 따로 처리 해줌.
                         var field_slot = _object.transform.parent;
@@ -27,6 +32,7 @@ namespace events {
                     default:
                         // 카드 재정렬 때문에 잠깐 비활성화.
                         // GameObject.FindGameObjectWithTag("Hand").GetComponent<Hand>().hide_cards(true);
+                        GameObject.FindGameObjectWithTag("Hand").GetComponent<Hand>().EndCardDrag();
                         break;
                 }
             }

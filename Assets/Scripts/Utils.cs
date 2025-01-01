@@ -5,6 +5,49 @@ using Zone;
 using Object = UnityEngine.Object;
 
 namespace Utils {
+    public static class Option {
+        public static Option<T> Some<T>(T value) => Option<T>.Some(value);
+        public static Option<T> None<T>() => Option<T>.None();
+    }
+    public abstract class Option<T> {
+        private Option() {}
+
+        public sealed class _Some : Option<T> {
+            public T Value { get; }
+            
+            public _Some(T value) {
+                Value = value;
+            }
+        }
+
+        public sealed class _None : Option<T> {
+            public static _None Instance { get; } = new _None();
+            private _None() {}
+        }
+
+        public static Option<T> Some(T value) => new _Some(value);
+        public static Option<T> None() => _None.Instance;
+        
+        public TResult Match<TResult>(
+            Func<T, TResult> some,
+            Func<TResult> none
+        ) => this switch {
+            _Some s => some(s.Value),
+            _None => none(),
+            _ => throw new InvalidOperationException()
+        };
+        
+        public bool TryGet(out T value) {
+            switch (this) {
+                case _Some some:
+                    value = some.Value;
+                    return true;
+                default:
+                    value = default;
+                    return false;
+            }
+        }
+    }
     public static class Utils {
         private static readonly Dictionary<ZoneType, Zone.Zone> zoneCache = new();
 
@@ -161,31 +204,3 @@ public static class Vector3Extensions
     }
 }
 
-public class Option<T> {
-    private readonly T _value;
-    private readonly bool _hasValue;
-
-    private Option(T value, bool hasValue) {
-        _value = value;
-        _hasValue = hasValue;
-    }
-
-    public static Option<T> Some(T value) {
-        return new Option<T>(value, true);
-    }
-
-    public static Option<T> None() {
-        return new Option<T>(default(T), false);
-    }
-
-    public bool HasValue => _hasValue;
-
-    public T Value {
-        get {
-            if (!_hasValue) {
-                throw new InvalidOperationException("No value present");
-            }
-            return _value;
-        }
-    }
-}

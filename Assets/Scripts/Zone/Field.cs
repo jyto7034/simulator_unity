@@ -16,21 +16,35 @@ namespace Zone {
             foreach (var obj in result) {
                 field_slots_tf.Add(
                     new TransformData(
-                        new Vector3(obj.transform.position.x + 0.05f, obj.transform.position.y + 0.2f,
-                            obj.transform.position.z),
-                        obj.transform.localScale * Constant.card_size_after_place_to_field,
-                        Quaternion.Euler(0, obj.transform.rotation.y, obj.transform.rotation.z)));
+                        obj.transform.AddPositionRet(x: 0.05f, y: 0.2f),
+                        new Vector3(0.08f, 0.08f, 0.08f),
+                        Quaternion.Euler(0, 0, 0))
+                    );
             }
         }
 
         // 이 함수에서 뭔가 버그 많이 터질 것 같음
         // 소환의 경우 Zone 에 소속되어있지 않으므로, if 가 실행됨.
         // 그런 경우를 적절히 처리해야함.
-        public override void add_card(Card.Card comp, int slot_id = 0) {
+        public override void add_card(Card.Card comp, int slot_id = -1) {
+            if (slot_id == -1) {
+                return;
+            }
+            
             if (!get_zone(comp.current_zone).remove_card(comp)) {
                 // When error occurred
             }
+
+            // FieldZone의 자식 중에서 slot_id + 1에 해당하는 오브젝트를 찾음
+            UnityEngine.Transform targetSlot = transform.Find((slot_id + 1).ToString());
+    
+            if (targetSlot == null) {
+                Debug.LogError($"Could not find slot {slot_id + 1} in FieldZone");
+                return;
+            }
+
             cards.Add(comp);
+            comp.transform.SetParent(targetSlot);
             GameSystem.Instance.card_animation.place_to_field_slot(comp, slot_id);
         }
 

@@ -86,7 +86,6 @@ namespace Card {
             if (!is_dragged) return;
 
             is_dragged = false;
-            event_config?.OnCardDragEnd?.Invoke(new CardDragEnd(this));
             event_config?.OnCardPlayed.Invoke(new CardPlayed(this));
         }
 

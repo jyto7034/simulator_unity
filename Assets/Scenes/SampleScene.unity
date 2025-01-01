@@ -1030,7 +1030,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 11
+  orthographic size: 15.413097
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1088,7 +1088,7 @@ Transform:
   m_GameObject: {fileID: 972783389}
   serializedVersion: 2
   m_LocalRotation: {x: 0.000000104308114, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -2.148, z: 1.6400001}
+  m_LocalPosition: {x: 0, y: -2.15, z: 0.17}
   m_LocalScale: {x: 4.276957, y: 0.0032069, z: 1.4531962}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1116,7 +1116,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Size: {x: 1, y: 1, z: 1.18}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &972783392
 MonoBehaviour:
@@ -1133,7 +1133,6 @@ MonoBehaviour:
   cards: []
   show_vertical_displacement: 2
   hide_vertical_displacement: 0.5
-  card_container_width: 0.7
   card_rotation: 15
   card_width: 2
   zoom_config:
@@ -1146,6 +1145,12 @@ MonoBehaviour:
     resetRotationOnZoom: 0
   events_config:
     OnCardPlayed:
+      m_PersistentCalls:
+        m_Calls: []
+    OnCardDragBegin:
+      m_PersistentCalls:
+        m_Calls: []
+    OnCardDrag:
       m_PersistentCalls:
         m_Calls: []
     OnCardHover:
@@ -1360,6 +1365,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1e89aeac41e78d43969959afa610694, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rayLength: 100
 --- !u!114 &1000449448
 MonoBehaviour:
   m_ObjectHideFlags: 0
