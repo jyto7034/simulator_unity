@@ -32,19 +32,25 @@ namespace Zone {
         private float lastEventTime = 0f;
         private readonly float eventCooldown = 0.001f; // 100ms 쿨다운
         private Dictionary<int, CardTransform[]> cardPositionsCache;
-        private GameObject card_prefab;
-        
-        // config 가 정말 필요한지 ?
-        [SerializeField]
+
+        // hover 상태일 때, 룬테라처럼 y 값에 가중치를 주고.
+        // scale 을 키워서 focusing 을 할 예정임.
+        // Hand 에서 public 변수로 다루기 보다는 따로 config 로 빼내는게 깔끔 할지도 모름.
         public ZoomConfig zoom_config;
 
-        [Header("Events")]
+        // Event 는 UnityEvent 타입을 가지는데, 이 타입의 경우 SerializeField 필드를 가지고 있을 때 
+        // 유니티 시스템에서 자동으로 초기화를 해줌.
+        // 그렇기 때문에 SerializeField 속성은 필수임.
         [SerializeField]
         private EventsConfig events_config;
-
+        
+        // 카드 hover 시 color 제대로 변하지 않는 오류는 고쳤고.
+        // Hover 상태에서 Unhover 상태로 돌아갈때 제대로 작동하지 않는 문제 있음.
+        // 그리고 카드 Play 했을 때, 카드 재정렬 안되는 문제 있음.
+        // 그리고 카드 위치 변경 기능 제대로 고쳐야함.
+        
         private void Awake() {
             cardPositionsCache = new Dictionary<int, CardTransform[]>();
-            card_prefab = Resources.Load<GameObject>("Prefabs/card");
             pre_calculate_all_card_positions();
         }
         
@@ -56,7 +62,6 @@ namespace Zone {
                 meshRenderer.material.renderQueue = BASE_QUEUE + i;
             
                 cards[i].transform.SetLocalPosition(y: i * 0.001f);
-                print(cards[i].transform.position.y);
             }
         }
         
@@ -125,10 +130,6 @@ namespace Zone {
         
         private void SetTransforms(bool isShow) {
             if (cards.Count == 0) return;
-
-            // for (int i = 0; i < cards.Count; i++) {
-            //     cards[i].transform.AddPosition(x: i);
-            // }
 
             var cardTransforms = cardPositionsCache[cards.Count];
             float verticalOffset = isShow ? show_vertical_displacement : hide_vertical_displacement;

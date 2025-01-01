@@ -6,7 +6,6 @@ using UnityEngine.Events;
 namespace config {
     [Serializable]
     public class EventsConfig {
-        [SerializeField]
         public UnityEvent<CardPlayed> OnCardPlayed;
         
         public UnityEvent<CardDragBegin> OnCardDragBegin;
@@ -17,10 +16,8 @@ namespace config {
         
         public UnityEvent<CardHover> OnCardHover;
         
-        [SerializeField]
         public UnityEvent<CardUnhover> OnCardUnhover;
         
-        [SerializeField]
         public UnityEvent<CardDestroy> OnCardDestroy;
     }
 }
