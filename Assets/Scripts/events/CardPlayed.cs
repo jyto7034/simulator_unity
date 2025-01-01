@@ -18,6 +18,9 @@ namespace events {
                     case "Card":
                         break;
                     case "Hand":
+                        if (card.current_zone == ZoneType.Hand) {
+                            break;
+                        }
                         if (_object.transform.TryGetComponent<Hand>(out var hand)) {
                             hand.add_card(card);
                         }
@@ -30,8 +33,6 @@ namespace events {
                         }
                         break;
                     default:
-                        // 카드 재정렬 때문에 잠깐 비활성화.
-                        // GameObject.FindGameObjectWithTag("Hand").GetComponent<Hand>().hide_cards(true);
                         GameObject.FindGameObjectWithTag("Hand").GetComponent<Hand>().EndCardDrag();
                         break;
                 }

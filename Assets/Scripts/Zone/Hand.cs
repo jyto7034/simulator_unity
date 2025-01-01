@@ -28,8 +28,9 @@ namespace Zone {
 
         private const int BASE_QUEUE = 3000; // Transparent 큐 시작점
         private int selected_card_idx;
-        private float drop_threshold = 0.5f; // 카드 사이 판정 거리
+        private float drop_threshold = 3f; // 카드 사이 판정 거리
         private bool is_hover = true;
+        private bool is_drag = false;
         private float lastEventTime = 0f;
         private readonly float eventCooldown = 0.001f; // 100ms 쿨다운
         private Dictionary<int, CardTransform[]> cardPositionsCache;
@@ -45,11 +46,24 @@ namespace Zone {
         [SerializeField]
         private EventsConfig events_config;
         
-        // 그리고 카드 위치 변경 기능 제대로 고쳐야함.
+        // 카드를 한 번 드래그 하면 y 값이 달라지는 문제 있음.
+        // 카드 드래그 중 y 값이 동일해서 이상하게 보이는 문제 있음.
         
         private void Awake() {
             cardPositionsCache = new Dictionary<int, CardTransform[]>();
             pre_calculate_all_card_positions();
+        }
+        
+        private void Start() {
+            GameObject holder = new GameObject("CardHolder") {
+                tag = "holder"
+            };
+    
+            holder.transform.SetParent(transform);
+            holder.transform.localPosition = Vector3.zero;
+            
+            InitializeCards();
+            hide_cards();
         }
         
         private void UpdateRenderQueue() {
@@ -62,34 +76,49 @@ namespace Zone {
         }
         
         public void EndCardDrag() {
+            is_drag = false;
             SetTransforms(is_hover); // SetCardPosition 대신 기존의 SetTransforms 사용
         }
     
         public void BeginCardDrag(Card.Card card) {
+            is_drag = true;
             selected_card_idx = cards.IndexOf(card);
         }
     
         public void OnCardDrag(Card.Card card) {
-            if (find_insertion_index(card.transform.position).TryGet(out int newIndex)) {
-                if (newIndex != selected_card_idx) {
-                    Debug.Log(newIndex);
-                    Debug.Log(selected_card_idx);
-                    // reorder_cards(selected_card_idx, newIndex);
-                    // selected_card_idx = newIndex;
-                }
+            if (find_insertion_index(card.transform.position, selected_card_idx).TryGet(out int newIndex)) {
+                reorder_cards(selected_card_idx, newIndex);
+                selected_card_idx = newIndex;
             }
             else {
                 print("Error: find_insertion_index()");
             }
         }
     
-        private Option<int> find_insertion_index(Vector3 position) {
-            for (var i = 0; i < cards.Count; i++) {
-                if (Vector3.Distance(position, cards[i].transform.position) < drop_threshold) {
-                    return Some(i);
+        private Option<int> find_insertion_index(Vector3 position, int draggingCardIndex) {
+            if (cards.Count <= 1) return Option<int>.None();  // 카드가 없거나 1장뿐이면 None
+
+            float minDistance = float.MaxValue;
+            int nearestIndex = -1;
+
+            // 모든 카드와의 거리를 검사
+            for (int i = 0; i < cards.Count; i++) {
+                // 드래그 중인 카드는 건너뜀
+                if (i == draggingCardIndex) continue;
+
+                float distance = Vector3.Distance(position, cards[i].transform.position);
+                // Debug.Log($"Card {i}: Distance = {distance:F2}");
+        
+                if (distance < minDistance && distance < drop_threshold) {
+                    minDistance = distance;
+                    nearestIndex = i;
                 }
             }
-            return None<int>();
+            Debug.Log($"find: {nearestIndex}");
+            // 가장 가까운 카드를 찾았다면 해당 인덱스 반환
+            return nearestIndex != -1 ? 
+                Option<int>.Some(nearestIndex) : 
+                Option<int>.None();
         }
     
         private void reorder_cards(int oldIndex, int newIndex) {
@@ -145,21 +174,10 @@ namespace Zone {
                 cards[i].transform.rotation = Quaternion.Euler(cardTransforms[i].Rotation);
             }
         }
-        private void Start() {
-            GameObject holder = new GameObject("CardHolder") {
-                tag = "holder"
-            };
-    
-            holder.transform.SetParent(transform);
-            holder.transform.localPosition = Vector3.zero;
-            
-            InitializeCards();
-            hide_cards();
-        }
 
         public void show_cards() {
-            if (Time.time - lastEventTime < eventCooldown) return;
-        
+            if (Time.time - lastEventTime < eventCooldown || is_drag) return;
+            
             lastEventTime = Time.time;
             if (!is_hover) {
                 SetTransforms(true);
@@ -168,6 +186,9 @@ namespace Zone {
         }
 
         public void hide_cards(bool flag = false) {
+            if (is_drag) {
+                return;
+            }
             if (is_hover || flag) {
                 SetTransforms(false);
                 is_hover = false;
@@ -194,7 +215,7 @@ namespace Zone {
             return card_rotation * normalizedIndex;
         }
 
-        public override void add_card(Card.Card comp, int slot_id = 0) {
+        public override void add_card(Card.Card comp, int slot_id = -1) {
             var holder = GameObject.FindWithTag("holder").transform;
             comp.GetComponent<Card.Card>().zoom_config = zoom_config;
             comp.GetComponent<Card.Card>().event_config = events_config;
