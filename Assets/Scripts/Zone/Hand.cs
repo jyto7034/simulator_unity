@@ -28,7 +28,7 @@ namespace Zone {
 
         private const int BASE_QUEUE = 3000; // Transparent 큐 시작점
         private int selected_card_idx;
-        private float drop_threshold = 3f; // 카드 사이 판정 거리
+        private float drop_threshold = 1f; // 카드 사이 판정 거리
         private bool is_hover = true;
         private bool is_drag = false;
         private float lastEventTime = 0f;
@@ -77,7 +77,7 @@ namespace Zone {
         
         public void EndCardDrag() {
             is_drag = false;
-            SetTransforms(is_hover); // SetCardPosition 대신 기존의 SetTransforms 사용
+            SetTransforms(is_hover); 
         }
     
         public void BeginCardDrag(Card.Card card) {
@@ -125,7 +125,8 @@ namespace Zone {
             var card = cards[oldIndex];
             cards.RemoveAt(oldIndex);
             cards.Insert(newIndex, card);
-        
+            
+            SetTransforms(is_hover); 
             // 카드 순서가 변경되었으므로 렌더 큐 업데이트
             UpdateRenderQueue();
         }
