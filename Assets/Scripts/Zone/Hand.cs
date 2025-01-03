@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Card;
 using config;
+using Core;
 using UnityEngine;
 using Utils;
 using static Utils.Option;
@@ -47,7 +48,8 @@ namespace Zone {
         private EventsConfig events_config;
         
         // 카드를 한 번 드래그 하면 y 값이 달라지는 문제 있음.
-        // 카드 드래그 중 y 값이 동일해서 이상하게 보이는 문제 있음.
+        // 일단 여기저기 SetTransforms 함수를 남발해서 결과물을 얻었고 성능 저하도 별로 없지만
+        // 뭔가 마음에 들진 않네..
         
         private void Awake() {
             cardPositionsCache = new Dictionary<int, CardTransform[]>();
@@ -72,12 +74,13 @@ namespace Zone {
                 meshRenderer.material.renderQueue = BASE_QUEUE + i;
             
                 cards[i].transform.SetLocalPosition(y: i * 0.001f);
+                // print(cards[i].name);
             }
         }
         
         public void EndCardDrag() {
             is_drag = false;
-            SetTransforms(is_hover); 
+            SetTransforms(is_hover);
         }
     
         public void BeginCardDrag(Card.Card card) {
@@ -91,7 +94,7 @@ namespace Zone {
                 selected_card_idx = newIndex;
             }
             else {
-                print("Error: find_insertion_index()");
+                // print("Error: find_insertion_index()");
             }
         }
     
@@ -102,20 +105,18 @@ namespace Zone {
             int nearestIndex = -1;
 
             // 모든 카드와의 거리를 검사
+            // 가지 치기를 이용해서 조금 더 최적화 할 수 있긴함.
             for (int i = 0; i < cards.Count; i++) {
-                // 드래그 중인 카드는 건너뜀
                 if (i == draggingCardIndex) continue;
 
                 float distance = Vector3.Distance(position, cards[i].transform.position);
-                // Debug.Log($"Card {i}: Distance = {distance:F2}");
         
                 if (distance < minDistance && distance < drop_threshold) {
                     minDistance = distance;
                     nearestIndex = i;
                 }
             }
-            Debug.Log($"find: {nearestIndex}");
-            // 가장 가까운 카드를 찾았다면 해당 인덱스 반환
+            
             return nearestIndex != -1 ? 
                 Option<int>.Some(nearestIndex) : 
                 Option<int>.None();
@@ -126,9 +127,7 @@ namespace Zone {
             cards.RemoveAt(oldIndex);
             cards.Insert(newIndex, card);
             
-            SetTransforms(is_hover); 
-            // 카드 순서가 변경되었으므로 렌더 큐 업데이트
-            UpdateRenderQueue();
+            SetTransforms(is_hover);
         }
 
 
@@ -171,9 +170,10 @@ namespace Zone {
                 // 숨김/보임 상태에 따라 수직 오프셋 조정
                 targetPosition.z = targetPosition.z * (verticalOffset / show_vertical_displacement);
             
-                cards[i].transform.SetLocalPosition(x: targetPosition.x, z: targetPosition.z);
+                cards[i].transform.SetLocalPosition(x: targetPosition.x, y: 0f, z: targetPosition.z);
                 cards[i].transform.rotation = Quaternion.Euler(cardTransforms[i].Rotation);
             }
+            UpdateRenderQueue();
         }
 
         public void show_cards() {
@@ -216,24 +216,27 @@ namespace Zone {
             return card_rotation * normalizedIndex;
         }
 
+        // 외부에서 카드를 가져올 때, 원하는 자리에 넣지 못하고 마지막 자리에 넣게됨.
+        // 외부에서 카드를 가져왔을 때, OnMouseExit 이 제대로 호출되지 않아서 color 가 그대로 남는 문제 있음.
         public override void add_card(Card.Card comp, int slot_id = -1) {
             var holder = GameObject.FindWithTag("holder").transform;
+            
             comp.GetComponent<Card.Card>().zoom_config = zoom_config;
             comp.GetComponent<Card.Card>().event_config = events_config;
+            
+            comp.current_zone = ZoneType.Hand;
+
             comp.transform.SetParent(holder);
             comp.transform.position = holder.position;
             comp.transform.localPosition = Vector3.zero;
+            comp.transform.localScale = new Vector3(0.64f, 1f, 0.62f);
+            
             cards.Add(comp);
-        
-            // 카드가 추가되었으므로 렌더 큐 업데이트
-            UpdateRenderQueue();
         }
 
         public override bool remove_card(Card.Card card) {
             if (cards.Contains(card)) {
                 cards.Remove(card);
-                // 카드가 제거되었으므로 렌더 큐 업데이트
-                UpdateRenderQueue();
                 return true;
             }
             return false;

@@ -18,13 +18,5 @@ namespace Card {
         private void Awake() {
             (player_cards, opponent_cards) = CardGenerator.CreateMaterialsAndApplyToPrefab(cardPrefab);
         }
-
-        void set_origin_order(bool is_mine) {
-            var count = is_mine ? player_cards.Count : opponent_cards.Count;
-            for (var i = 0; i < count; i++) {
-                var target_card = is_mine ? player_cards[i] : opponent_cards[i];
-                target_card?.GetComponent<Order>().set_origin_order(i);
-            }
-        }
     }
 }

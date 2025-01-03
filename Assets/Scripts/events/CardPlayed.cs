@@ -16,12 +16,11 @@ namespace events {
                     case "Untagged":
                         continue;
                     case "Card":
-                        break;
-                    case "Hand":
                         if (card.current_zone == ZoneType.Hand) {
                             break;
                         }
-                        if (_object.transform.TryGetComponent<Hand>(out var hand)) {
+                        if (GameObject.FindGameObjectWithTag("Hand").TryGetComponent<Hand>(out var hand)) {
+                            Debug.Log("entry");
                             hand.add_card(card);
                         }
                         break;

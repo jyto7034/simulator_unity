@@ -28,7 +28,5 @@ namespace Animation {
             anim.MoveTo(card, before, 0.2f).AppendInterval(0.3f).Play();
             anim.MoveTo(card, slot, 0.2f).Play();
         }
-
-        public static void place_to_hand(GameObject card) { }
     }
 }

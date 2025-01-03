@@ -44,6 +44,7 @@ namespace Zone {
             }
 
             cards.Add(comp);
+            comp.current_zone = ZoneType.Field;
             comp.transform.SetParent(targetSlot);
             GameSystem.Instance.card_animation.place_to_field_slot(comp, slot_id);
         }

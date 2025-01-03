@@ -12,9 +12,15 @@ namespace Card {
         
         [HideInInspector] 
         public Guid uuid;
+
+        public CardStatus card_status;
         
         private bool is_hover = false;
         private bool is_dragged = false;
+        
+        private MeshRenderer meshRenderer;
+        private Material frontMaterial; // 카드 앞면 머테리얼
+        private Material backMaterial;  // 카드 뒷면 머테리얼
         
         public EventsConfig event_config;
         public ZoomConfig zoom_config;
@@ -25,6 +31,28 @@ namespace Card {
         
         private void Start() {
             lastPosition = transform.position;
+        }
+        
+        public void SetupMaterials(Material front, Material back) {
+            frontMaterial = front;
+            backMaterial = back;
+            meshRenderer = GetComponent<MeshRenderer>();
+        }
+        
+        public void SetCardStatus(CardStatus status) {
+            card_status = status;
+            UpdateCardFace();
+        }
+
+        private void UpdateCardFace() {
+            switch (card_status) {
+                case CardStatus.Open:
+                    meshRenderer.material = frontMaterial;
+                    break;
+                case CardStatus.Close:
+                    meshRenderer.material = backMaterial;
+                    break;
+            }
         }
         
         public void OnMouseEnter() {

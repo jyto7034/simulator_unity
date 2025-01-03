@@ -46,7 +46,6 @@ namespace Transform {
             data.position.z += z ?? 0;
         }
         public static void AddScale(this TransformData data, float? x = null, float? y = null, float? z = null) {
-            Debug.Log("Entry");
             data.scale.x += x ?? 0;
             data.scale.y += y ?? 0;
             data.scale.z += z ?? 0;

@@ -16,6 +16,11 @@ public enum ServerType {
     FrontEnd,
 }
 
+public enum CardStatus {
+    Open,
+    Close,
+}
+
 public enum ServerState {
     // 상대 행동을 기다리는 중
     Pending,
