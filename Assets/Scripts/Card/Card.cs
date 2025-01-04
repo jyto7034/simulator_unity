@@ -5,10 +5,12 @@ using events;
 using Transform;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Zone;
 
 namespace Card { 
     public class Card : MonoBehaviour{
-        public ZoneType current_zone;
+        public ZoneType current_zone_type;
+        public Zone.Zone current_zone;
         
         [HideInInspector] 
         public Guid uuid;
@@ -31,6 +33,11 @@ namespace Card {
         
         private void Start() {
             lastPosition = transform.position;
+        }
+
+        public void set_zone(Zone.Zone _zone) {
+            current_zone = _zone;
+            current_zone_type = _zone.zone_type;
         }
         
         public void SetupMaterials(Material front, Material back) {

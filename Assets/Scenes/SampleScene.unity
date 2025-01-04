@@ -1131,6 +1131,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cards: []
+  zone_type: 0
   show_vertical_displacement: 2
   hide_vertical_displacement: 0.5
   card_rotation: 15
@@ -1808,6 +1809,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cards: []
+  zone_type: 0
 --- !u!1 &1328214147
 GameObject:
   m_ObjectHideFlags: 0
@@ -3000,7 +3002,7 @@ GameObject:
   - component: {fileID: 1899627655}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Player
+  m_TagString: Player1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3034,7 +3036,7 @@ GameObject:
   - component: {fileID: 1914769063}
   m_Layer: 0
   m_Name: Opponent
-  m_TagString: Untagged
+  m_TagString: Player2
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

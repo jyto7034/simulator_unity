@@ -56,3 +56,12 @@ public enum ZoneType {
     Field,
     None,
 }
+
+public enum PlayerType {
+    Player1,
+    Player2
+}
+
+public class AddCardOptions {
+    public int? SlotId { get; set; }
+}

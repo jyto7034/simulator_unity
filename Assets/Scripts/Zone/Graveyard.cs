@@ -1,11 +1,16 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using Utils;
 using static Utils.Option;
 using static Utils.Result;
 
 namespace Zone {
     public class Graveyard : Zone{
-        public override Result<Unit, GameError> add_card(Card.Card comp, int slot_id = -1) {
+        private void Start() {
+            zone_type = ZoneType.Graveyard;
+        }
+
+        public override Result<Unit, GameError> add_card(Card.Card comp, AddCardOptions options = null) {
             return Ok();
         }
 
@@ -13,7 +18,7 @@ namespace Zone {
             return Ok();
         }
 
-        public override Result<Unit, GameError> move_card(Card.Card card, ZoneType target_zone) {
+        public override Result<Unit, GameError> move_card(Card.Card card, ZoneType target_zone, AddCardOptions options = null) {
             return Ok();
         }
     }

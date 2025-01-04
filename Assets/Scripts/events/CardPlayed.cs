@@ -16,24 +16,21 @@ namespace events {
                     case "Untagged":
                         continue;
                     case "Card":
-                        if (card.current_zone == ZoneType.Hand) {
-                            break;
+                        if (card.current_zone_type == ZoneType.Hand) {
+                            return;
                         }
                         if (GameObject.FindGameObjectWithTag("Hand").TryGetComponent<Hand>(out var hand)) {
                             Debug.Log("entry");
                             hand.add_card(card);
                         }
-                        break;
+                        return;
                     case "Field_Slot":
+                        card.current_zone.move_card(card, ZoneType.Field);
                         // field_slot 은 Field 스크립트가 부모 오브젝트에 있기 때문에 따로 처리 해줌.
-                        var field_slot = _object.transform.parent;
-                        if (field_slot.TryGetComponent<Field>(out var field_comp)) {
-                            field_comp.add_card(card, int.Parse(_object.transform.name) - 1);
-                        }
-                        break;
+                        return;
                     default:
                         GameObject.FindGameObjectWithTag("Hand").GetComponent<Hand>().EndCardDrag();
-                        break;
+                        return;
                 }
             }
         }

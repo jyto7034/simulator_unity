@@ -26,7 +26,6 @@ namespace Zone {
         public float hide_vertical_displacement;
         public int card_rotation = 15;
         public float card_width = 2;
-        public const int MAX_CARDS = 10;
 
         private const int BASE_QUEUE = 3000; // Transparent 큐 시작점
         private int selected_card_idx;
@@ -58,6 +57,8 @@ namespace Zone {
         }
         
         private void Start() {
+            zone_type = ZoneType.Hand;
+            
             GameObject holder = new GameObject("CardHolder") {
                 tag = "holder"
             };
@@ -65,7 +66,6 @@ namespace Zone {
             holder.transform.SetParent(transform);
             holder.transform.localPosition = Vector3.zero;
             
-            InitializeCards();
             hide_cards();
         }
         
@@ -133,7 +133,7 @@ namespace Zone {
 
 
         private void pre_calculate_all_card_positions() {
-            for (int cardCount = 0; cardCount < MAX_CARDS; cardCount++) {
+            for (int cardCount = 0; cardCount < Constant.HAND_CARD_MAX_SIZE; cardCount++) {
                 cardPositionsCache[cardCount] = CalculateTransforms(cardCount);
             }
         }
@@ -194,14 +194,6 @@ namespace Zone {
             SetTransforms();
         }
         
-        private void InitializeCards() {
-            var gs = CardManager.player_cards;
-            foreach (var item in gs) {
-                item.SetActive(true);
-                add_card(item.GetComponent<Card.Card>());
-            }
-        }
-
         private float GetCardVerticalDisplacement(int index, int cardCount) {
             if (cardCount < 3) return 0;
             float normalizedIndex = (index - (cardCount - 1) / 2f) / ((cardCount - 1) / 2f);
@@ -216,7 +208,7 @@ namespace Zone {
 
         // 외부에서 카드를 가져올 때, 원하는 자리에 넣지 못하고 마지막 자리에 넣게됨.
         // 외부에서 카드를 가져왔을 때, OnMouseExit 이 제대로 호출되지 않아서 color 가 그대로 남는 문제 있음.
-        public override Result<Unit, GameError> add_card(Card.Card comp, int slot_id = -1) {
+        public override Result<Unit, GameError> add_card(Card.Card comp, AddCardOptions options = null) {
             // ExceededCardLimit 에러 처리해야함.
             if (cards.Count + 1 >= Constant.HAND_CARD_MAX_SIZE) {
                 return Err(GameError.ExceededCardLimit);
@@ -226,7 +218,7 @@ namespace Zone {
             comp.GetComponent<Card.Card>().zoom_config = zoom_config;
             comp.GetComponent<Card.Card>().event_config = events_config;
             
-            comp.current_zone = ZoneType.Hand;
+            comp.current_zone_type = ZoneType.Hand;
 
             comp.transform.SetParent(holder);
             comp.transform.position = holder.position;
@@ -235,19 +227,65 @@ namespace Zone {
             
             cards.Add(comp);
 
-            return Ok<GameError>();
+            return Ok();
         }
 
         public override Result<Unit, GameError> remove_card(Card.Card card) {
             if (!cards.Contains(card)) return Err(GameError.UnkownFailed);
             
             cards.Remove(card);
+            SetTransforms();
             return Ok();
         }
 
-        public override Result<Unit, GameError> move_card(Card.Card card, ZoneType target_zone) {
+        public override Result<Unit, GameError> move_card(Card.Card card, ZoneType target_zone, AddCardOptions options = null) {
+            switch (target_zone) {
+                case ZoneType.Hand:
+                    return Err(GameError.UnkownFailed);
+                case ZoneType.Deck:
+                    return to_deck(card);
+                case ZoneType.Graveyard:
+                    return to_graveyard(card);
+                case ZoneType.Field:
+                    return to_field(card);
+                case ZoneType.None:
+                    return Err(GameError.UnkownFailed);
+                default:
+                    return Err(GameError.UnkownFailed);
+            }
+        }
+
+        /// <summary>
+        /// Hand.move_card 에서 호출하는 하위 함수
+        /// </summary>
+        /// <param name="card">Card 컴포넌트</param>
+        /// <param name="options">Slot Id 등 옵션 정보</param>
+        /// <returns></returns>
+        private Result<Unit, GameError> to_field(Card.Card card, AddCardOptions options = null) {
+            if (options?.SlotId == null) return Err(GameError.UnkownFailed);
+            
+            var result = remove_card(card);
+            if (result.IsErr) {
+                // TODO: 에러 만들어야함.
+                return Err(GameError.UnkownFailed);
+            }
+
+            return 
+                GameObject.FindGameObjectWithTag("Field").TryGetComponent<Field>(out var field) 
+                ? 
+                // if
+                field.add_card(card, options) :
+                // else
+                // TODO: 에러 만들어야함.
+                Err(GameError.UnkownFailed);
+        }
+        
+        private Result<Unit, GameError> to_graveyard(Card.Card card, AddCardOptions options = null) {
             return Ok();
         }
 
+        private Result<Unit, GameError> to_deck(Card.Card card, AddCardOptions options = null) {
+            return Ok();
+        }
     }
 }

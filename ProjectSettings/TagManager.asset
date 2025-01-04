@@ -15,6 +15,9 @@ TagManager:
   - Hand
   - back
   - holder
+  - Field
+  - Player1
+  - Player2
   layers:
   - Default
   - TransparentFX
