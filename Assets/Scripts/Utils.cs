@@ -50,14 +50,84 @@ namespace Utils {
             }
         }
     }
+    
+    public struct Unit
+    {
+        public static Unit Value => default;
+    }
+    
+    public static class Result {
+        // 기존 메서드들
+        public static Result<T, E> Ok<T, E>(T value) => Result<T, E>.Ok(value);
+        public static Result<T, E> Err<T, E>(E error) => Result<T, E>.Err(error);
+    
+        // Unit을 위한 편의 메서드들
+        public static Result<Unit, E> Ok<E>() => Result<Unit, E>.Ok(Unit.Value);
+        public static Result<T, Unit> Err<T>() => Result<T, Unit>.Err(Unit.Value);
+
+        // public static Result<Unit, Unit> Ok() => Result<Unit, Unit>.Ok(Unit.Value);
+        // public static Result<Unit, Unit> Err() => Result<Unit, Unit>.Err(Unit.Value);
+        
+        public static Result<Unit, GameError> Ok() => Result<Unit, GameError>.Ok(Unit.Value);
+        public static Result<Unit, GameError> Err(GameError error) => Result<Unit, GameError>.Err(error);
+    }
+
+    public abstract class Result<T, E> {
+        private Result() {}
+
+        public sealed class _Ok : Result<T, E> {
+            public T Value { get; }
+        
+            public _Ok(T value) {
+                Value = value;
+            }
+        }
+
+        public sealed class _Err : Result<T, E> {
+            public E Error { get; }
+        
+            public _Err(E error) {
+                Error = error;
+            }
+        }
+
+        public static Result<T, E> Ok(T value) => new _Ok(value);
+        public static Result<T, E> Err(E error) => new _Err(error);
+    
+        public TResult Match<TResult>(
+            Func<T, TResult> ok,
+            Func<E, TResult> err
+        ) => this switch {
+            _Ok s => ok(s.Value),
+            _Err e => err(e.Error),
+            _ => throw new InvalidOperationException()
+        };
+    
+        public bool IsOk => this is _Ok;
+        public bool IsErr => this is _Err;
+    
+        public bool TryGetOk(out T value) {
+            if (this is _Ok ok) {
+                value = ok.Value;
+                return true;
+            }
+            value = default;
+            return false;
+        }
+    
+        public bool TryGetErr(out E error) {
+            if (this is _Err err) {
+                error = err.Error;
+                return true;
+            }
+            error = default;
+            return false;
+        }
+    }
+    
     public static class Utils {
         private static readonly Dictionary<ZoneType, Zone.Zone> zoneCache = new();
 
-        public static void transfer_to_zone(Card.Card card, ZoneType target_zone) {
-            get_zone(card.current_zone).remove_card(card);
-            get_zone(target_zone).add_card(card);
-        }
-        
         public static Zone.Zone get_zone(ZoneType type) {
             // 캐시에 있으면 반환
             if (zoneCache.TryGetValue(type, out var zone1))

@@ -1,17 +1,20 @@
 ﻿using UnityEngine;
+using Utils;
+using static Utils.Option;
+using static Utils.Result;
 
 namespace Zone {
     public class Graveyard : Zone{
-        public override void add_card(Card.Card comp, int slot_id = 0) {
-            throw new System.NotImplementedException();
+        public override Result<Unit, GameError> add_card(Card.Card comp, int slot_id = -1) {
+            return Ok();
         }
 
-        public override bool remove_card(Card.Card card) {
-            throw new System.NotImplementedException();
+        public override Result<Unit, GameError> remove_card(Card.Card card) {
+            return Ok();
         }
 
-        public override void pull_card(Card.Card card, ZoneType zone_type) {
-            throw new System.NotImplementedException();
+        public override Result<Unit, GameError> move_card(Card.Card card, ZoneType target_zone) {
+            return Ok();
         }
     }
 }

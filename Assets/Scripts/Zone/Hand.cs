@@ -6,6 +6,7 @@ using Core;
 using UnityEngine;
 using Utils;
 using static Utils.Option;
+using static Utils.Result;
 
 namespace Zone {
     struct CardTransform {
@@ -80,7 +81,7 @@ namespace Zone {
         
         public void EndCardDrag() {
             is_drag = false;
-            SetTransforms(is_hover);
+            SetTransforms();
         }
     
         public void BeginCardDrag(Card.Card card) {
@@ -127,7 +128,7 @@ namespace Zone {
             cards.RemoveAt(oldIndex);
             cards.Insert(newIndex, card);
             
-            SetTransforms(is_hover);
+            SetTransforms();
         }
 
 
@@ -159,11 +160,11 @@ namespace Zone {
             return transforms;
         }
         
-        private void SetTransforms(bool isShow) {
+        private void SetTransforms() {
             if (cards.Count == 0) return;
 
             var cardTransforms = cardPositionsCache[cards.Count];
-            float verticalOffset = isShow ? show_vertical_displacement : hide_vertical_displacement;
+            float verticalOffset = is_hover ? show_vertical_displacement : hide_vertical_displacement;
             
             for (int i = 0; i < cards.Count; i++) {
                 var targetPosition = cardTransforms[i].Position;
@@ -177,23 +178,20 @@ namespace Zone {
         }
 
         public void show_cards() {
-            if (Time.time - lastEventTime < eventCooldown || is_drag) return;
+            if (Time.time - lastEventTime < eventCooldown || is_drag || is_hover) return;
             
             lastEventTime = Time.time;
-            if (!is_hover) {
-                SetTransforms(true);
-                is_hover = true;
-            }
+            // SetTransforms() 은 is_hover 에 의존적이기 때문에
+            // 호출 순서를 잘 지켜야함. 
+            is_hover = true;
+            SetTransforms();
         }
 
         public void hide_cards(bool flag = false) {
-            if (is_drag) {
-                return;
-            }
-            if (is_hover || flag) {
-                SetTransforms(false);
-                is_hover = false;
-            }
+            if (!is_hover && !flag || is_drag) return;
+
+            is_hover = false;
+            SetTransforms();
         }
         
         private void InitializeCards() {
@@ -218,7 +216,11 @@ namespace Zone {
 
         // 외부에서 카드를 가져올 때, 원하는 자리에 넣지 못하고 마지막 자리에 넣게됨.
         // 외부에서 카드를 가져왔을 때, OnMouseExit 이 제대로 호출되지 않아서 color 가 그대로 남는 문제 있음.
-        public override void add_card(Card.Card comp, int slot_id = -1) {
+        public override Result<Unit, GameError> add_card(Card.Card comp, int slot_id = -1) {
+            // ExceededCardLimit 에러 처리해야함.
+            if (cards.Count + 1 >= Constant.HAND_CARD_MAX_SIZE) {
+                return Err(GameError.ExceededCardLimit);
+            }
             var holder = GameObject.FindWithTag("holder").transform;
             
             comp.GetComponent<Card.Card>().zoom_config = zoom_config;
@@ -232,18 +234,19 @@ namespace Zone {
             comp.transform.localScale = new Vector3(0.64f, 1f, 0.62f);
             
             cards.Add(comp);
+
+            return Ok<GameError>();
         }
 
-        public override bool remove_card(Card.Card card) {
-            if (cards.Contains(card)) {
-                cards.Remove(card);
-                return true;
-            }
-            return false;
+        public override Result<Unit, GameError> remove_card(Card.Card card) {
+            if (!cards.Contains(card)) return Err(GameError.UnkownFailed);
+            
+            cards.Remove(card);
+            return Ok();
         }
 
-        public override void pull_card(Card.Card card, ZoneType zone_type) {
-            // 카드 당기기 로직 구현
+        public override Result<Unit, GameError> move_card(Card.Card card, ZoneType target_zone) {
+            return Ok();
         }
 
     }

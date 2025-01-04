@@ -49,11 +49,6 @@ public class GameConfig {
     }
 }
 
-public struct FromTo {
-    public TransformData from;
-    public TransformData to;
-}
-
 public enum ZoneType {
     Hand,
     Deck,
